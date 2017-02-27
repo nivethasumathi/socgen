@@ -1,0 +1,927 @@
+> data<- file.path("/home/nivetha/Music/moral.txt", "corpus", "txt")
+> setwd("/home/nivetha/Music/")
+> data <- file.path(".", "corpus", "txt")
+> data
+[1] "./corpus/txt"
+> length(dir(data))
+[1] 1
+> library(tm)
+> d <- Corpus(DirSource(data))
+> d
+<<VCorpus>>
+Metadata:  corpus specific: 0, document level (indexed): 0
+Content:  documents: 1
+> class(d)
+[1] "VCorpus" "Corpus" 
+> class(d[[1]])
+[1] "PlainTextDocument" "TextDocument"     
+> summary(d)
+          Length Class             Mode
+moral.txt 2      PlainTextDocument list
+> inspect(d[1])
+<<VCorpus>>
+Metadata:  corpus specific: 0, document level (indexed): 0
+Content:  documents: 1
+
+[[1]]
+<<PlainTextDocument>>
+Metadata:  7
+Content:  chars: 17976
+
+> getTransformations()
+[1] "removeNumbers"     "removePunctuation" "removeWords"       "stemDocument"     
+[5] "stripWhitespace"  
+> d <- tm_map(d, content_transformer(tolower))
+> d <- tm_map(d, removeNumbers)
+> d <- tm_map(d, removePunctuation)
+> d <- tm_map(d, removeWords, stopwords("english"))
+> length(stopwords("english"))
+[1] 174
+> stopwords("english")
+  [1] "i"          "me"         "my"         "myself"     "we"         "our"        "ours"      
+  [8] "ourselves"  "you"        "your"       "yours"      "yourself"   "yourselves" "he"        
+ [15] "him"        "his"        "himself"    "she"        "her"        "hers"       "herself"   
+ [22] "it"         "its"        "itself"     "they"       "them"       "their"      "theirs"    
+ [29] "themselves" "what"       "which"      "who"        "whom"       "this"       "that"      
+ [36] "these"      "those"      "am"         "is"         "are"        "was"        "were"      
+ [43] "be"         "been"       "being"      "have"       "has"        "had"        "having"    
+ [50] "do"         "does"       "did"        "doing"      "would"      "should"     "could"     
+ [57] "ought"      "i'm"        "you're"     "he's"       "she's"      "it's"       "we're"     
+ [64] "they're"    "i've"       "you've"     "we've"      "they've"    "i'd"        "you'd"     
+ [71] "he'd"       "she'd"      "we'd"       "they'd"     "i'll"       "you'll"     "he'll"     
+ [78] "she'll"     "we'll"      "they'll"    "isn't"      "aren't"     "wasn't"     "weren't"   
+ [85] "hasn't"     "haven't"    "hadn't"     "doesn't"    "don't"      "didn't"     "won't"     
+ [92] "wouldn't"   "shan't"     "shouldn't"  "can't"      "cannot"     "couldn't"   "mustn't"   
+ [99] "let's"      "that's"     "who's"      "what's"     "here's"     "there's"    "when's"    
+[106] "where's"    "why's"      "how's"      "a"          "an"         "the"        "and"       
+[113] "but"        "if"         "or"         "because"    "as"         "until"      "while"     
+[120] "of"         "at"         "by"         "for"        "with"       "about"      "against"   
+[127] "between"    "into"       "through"    "during"     "before"     "after"      "above"     
+[134] "below"      "to"         "from"       "up"         "down"       "in"         "out"       
+[141] "on"         "off"        "over"       "under"      "again"      "further"    "then"      
+[148] "once"       "here"       "there"      "when"       "where"      "why"        "how"       
+[155] "all"        "any"        "both"       "each"       "few"        "more"       "most"      
+[162] "other"      "some"       "such"       "no"         "nor"        "not"        "only"      
+[169] "own"        "same"       "so"         "than"       "too"        "very"      
+> d <- tm_map(d, removeWords, c("department", "email"))
+> d <- tm_map(d, stripWhitespace)
+> d <- tm_map(d, stemDocument)
+> library(SnowballC)
+> dtm <- DocumentTermMatrix(d)
+> dtm
+<<DocumentTermMatrix (documents: 1, terms: 1213)>>
+Non-/sparse entries: 1213/0
+Sparsity           : 0%
+Maximal term length: 16
+Weighting          : term frequency (tf)
+> freq <- colSums(as.matrix(dtm))
+> length(freq)
+[1] 1213
+> ord <- order(freq)
+> freq[head(ord)]
+    10"you      11111     11when       12it      13the 15concentr 
+         1          1          1          1          1          1 
+> freq[tail(ord)]
+ you with  his  was  and  the 
+  21   26   41   64   93  214 
+> head(table(freq), 15)
+freq
+  1   2   3   4   5   6   7   8   9  10  11  12  13  14  15 
+830 180  68  47  25  14  11   6   3   7   4   1   5   1   1 
+> tail(table(freq), 15)
+freq
+ 11  12  13  14  15  16  17  18  19  21  26  41  64  93 214 
+  4   1   5   1   1   1   1   1   1   1   1   1   1   1   1 
+> m <- as.matrix(dtm)
+> dim(m)
+[1]    1 1213
+> write.csv(m, file="dtm.csv")
+> dim(dtm)
+[1]    1 1213
+> dtms <- removeSparseTerms(dtm, 0.1)
+> dim(dtms)
+[1]    1 1213
+> inspect(dtms)
+<<DocumentTermMatrix (documents: 1, terms: 1213)>>
+Non-/sparse entries: 1213/0
+Sparsity           : 0%
+Maximal term length: 16
+Weighting          : term frequency (tf)
+
+           Terms
+Docs        10"you 11111 11when 12it 13the 15concentr 16destroy 17to 18tanaji 19tanaji 3sick
+  moral.txt      1     1      1    1     1          1         1    1        1        1     1
+           Terms
+Docs        4this 5man 6he 7of about about, abov ac- accident." across adults, adven- adventure.
+  moral.txt     1    1   1   1     2      1    1   1          1      1       1      1          1
+           Terms
+Docs        affect affection affection. affectionate. after afterwards." again again, again.
+  moral.txt      1         2          1             1     1            1     5      2      2
+           Terms
+Docs        against "ah, air alert. all all. all." alone?" along aloud, alreadi also anchor
+  moral.txt       4    1   1      1  11    1     1       1     1      2       1    1      1
+           Terms
+Docs        anchor. and "and anger anger, anger. angri ani annoyance, anoth another answer
+  moral.txt       1  93    1     1      1      1     2   2          1     2       3      1
+           Terms
+Docs        anxiety, anxious appli are "are are! aren't arm arm. armi arms. around around. arti-
+  moral.txt        1       1     1   4    1    1      1   1    1    1     1      2       2     1
+           Terms
+Docs        arti'*** arti\\ articl asid ask asked, asked. assembl attent attention. attract away
+  moral.txt        1      1      1    1  10      3      6       1      2          1       2    5
+           Terms
+Docs        away, "aye, aye, "baby, "baby! baby! back bad balconi balcony, balcony. bat- battle.
+  moral.txt     1     2    1      3      1     1    7   1       2        1        1    1       1
+           Terms
+Docs        be- beauti .becaus because. been beeta beeta, beeta," befor before," beg behind
+  moral.txt   1      2       1        1    1     2      1       1     4        1   1      1
+           Terms
+Docs        belong besid best better between bhaiya bhaiya, bhaiya. bid big binocular binoculars.
+  moral.txt      1     2    1      1       1      3       4       1   1   5         1           1
+           Terms
+Docs        "b.i.s.n. bit black blowing. blue blurt board boat boat." book book, borrow both
+  moral.txt         1   1     2        1    2     1     3    4      1    2     1      1    2
+           Terms
+Docs        bother bout bow box box. brave break, breakfast. breath breath. brew bride bring
+  moral.txt      1    1   1   3    1     1      1          2      1       2    1     1     2
+           Terms
+Docs        bringing?" broke brother brother. brought brown buckl bulb bunt burst busi busy, but
+  moral.txt          1     2       1        2       2     1     1    1    1     2    4     1  10
+           Terms
+Docs        "but cabin cabin." cabins. call calm. came can "can cap- capt. captain captain,"
+  moral.txt    1     1       1       1    7     1   11   4    1    1     1      13         1
+           Terms
+Docs        captain. care care." careful, carefully. cat!" "catch". caught certain chair chair,
+  moral.txt        2    1      1        1          1     1        1      4       1     4      1
+           Terms
+Docs        chair. chairs, channel cheek cheeks. child child, child. childhood chubbi clap class
+  moral.txt      1       1       1     1       2     1      1      1         1      1    1     2
+           Terms
+Docs        clear. clearly. climb clinic clinic, close closer cloth clothes. co. coconut. cold,"
+  moral.txt      1        1     1      1       1     6      1     1        1   1        1      1
+           Terms
+Docs        colour come "come come, commentary. commot compani companion complet compliments
+  moral.txt      1    4     1     1           1      1       1         1       1           1
+           Terms
+Docs        compound conscious conscious. consol continu convinced. cosi could couldn't coupl
+  moral.txt        1         1          1      1       1          1    1     8        3     2
+           Terms
+Docs        course, course. crash crew cri cried. cross crowd current curtain curtain, danc
+  moral.txt       1       1     1    2   1      1     3     3       1       1        1    1
+           Terms
+Docs        daring. darl dash daughter, daughter. day day, day. days." dear dear," dear. deck
+  moral.txt       1    2    1         1         1   1    1    4      1    1      1     1    2
+           Terms
+Docs        deck. decor ded deep den detail deter- did didn't dine disappear. distance. disturb
+  moral.txt     2     1   1    1   1      1      1   6      1    2          1         1       1
+           Terms
+Docs        disturb- doctor "doctor! doctor? doctor. "doe dog, doing, doll doll, domination.
+  moral.txt        1      2        1       2       1    1    1      1    1     1           1
+           Terms
+Docs        "don't "don't," don't door, door. down down," down. doze drag drew driver. drop
+  moral.txt      3        1     3     3     1   10      1     3    1    2    1       1    2
+           Terms
+Docs        drowsi dull dure duti eager eagerly. ear earli easi edg eh? elder elder- end english
+  moral.txt      1    1    1    1     1        1   3     1    1   1   1     2      1   2       2
+           Terms
+Docs        engross enjoy enter entered. errands. even ever everi everybody. everyon everyone,"
+  moral.txt       1     1     1        1        1    5    1     1          1       4          1
+           Terms
+Docs        everyth everywhere. ex- exasperated, excitedly, exclaimed. experi experience. explor
+  moral.txt       3           1   1            1          1          1      1           1      1
+           Terms
+Docs        eye eyes, eyes." face fall famili fantastic! far farewell. fasci- fascin fast father
+  moral.txt   4     2      1    5    1      1          1   1         2      1      1    1      3
+           Terms
+Docs        favourit feel feet feet. fell felt festiv fever," ficial find finger. first fit fix
+  moral.txt        1    1    1     1    1    3      1       1      1    1       1     1   1   1
+           Terms
+Docs        flutter follow food footstep for forbidden force. fore fore- forehead. fort. forward
+  moral.txt       1      1    1        2  17         1      1    1     1         1     1       1
+           Terms
+Docs        forward. fought found four free friend "friend friend. friends, friends. fro fro,
+  moral.txt        1      1     2    1    1      1       1       1        1        1   1    1
+           Terms
+Docs        fro. from front full fume fun furi furnish gallop game games, games. gape gaze
+  moral.txt    1   10     2    4    1   1    1       1      1    1      1      1    1    1
+           Terms
+Docs        gentleman gestur get gibraltar. girl, give given glow "go go. god! god!" goe gone
+  moral.txt         2      1   4          1     1    4     2    1   1   1    1     1   2    1
+           Terms
+Docs        good "good got grandpar grin- grip groom. gulp had hair. hall hall, hand hand. hands,
+  moral.txt    1     1   3        1     1    1      1    1  13     1    1     1    6     3      1
+           Terms
+Docs        happening?" happening. happi happiest happili happy. harbour, has hasn't have he?"
+  moral.txt           1          1     1        1       1      1        1   4      1   18    1
+           Terms
+Docs        head head. hear heard heard, heard. heav heavi held he'll helm," "help! help! help?
+  moral.txt    3     1    1     4      1      1    2     1    2     1      1      1     1     1
+           Terms
+Docs        her her, her. here here, here?" him him, him! him!" him. him." himself himself. hind
+  moral.txt   4    1    1    1     3      1  16    3    1     1   15     4       1        1    1
+           Terms
+Docs        his "his hold holiday holiday, holiday. home hope hor- hors horsemen, hospit hot hous
+  moral.txt  41    1    3       1        1        1    1    1    1    1         1      2   1    1
+           Terms
+Docs        house, house. how "how hug huge hung hurri hurt hurt, ignor "i'll i'll ill. i'm
+  moral.txt      1      3   4    1   1    2    1     1    1     1     1     2    3    2   5
+           Terms
+Docs        imagin immedi immediately," "in in, inclin incoherently, indeed," indian indoor ing
+  moral.txt      2      4             1   1   1      1             1        1      1      1   3
+           Terms
+Docs        ings!" inscrib inside." inspect instantly. instruct into is!" isn't "it it, it?" it.
+  moral.txt      1       1        1       1          1        1   11    1     2   1   3    2   4
+           Terms
+Docs        i've jewel-cas jiffi joy. jump just "ka/e* keep "keep kept kerchief kiss klick-klack
+  moral.txt    1         1     1    1    2    5      1    2     1    2        1    1           1
+           Terms
+Docs        knew knock know know," know." known kolas* ladi lady, lamp land land. larg lash last
+  moral.txt    2     1    1      1      1     1      1    1     1    1    1     1    1    1    1
+           Terms
+Docs        later later, laugh laughing. laughs," laughter. lead leader leader. leaf lean leap
+  moral.txt     1      1     1         1        1         1    1      1       1    1    3    1
+           Terms
+Docs        leapt leav left legs. lem. let library. life-boat life-boats. lift light like
+  moral.txt     1    2    1     1    1   1        1         2           1    1     5    4
+           Terms
+Docs        lindsay." lion lion. listen liter littl live look "look, "look!" look- look, look.
+  moral.txt         1    1     1      2     1     1    1    8      2       1     1     1     1
+           Terms
+Docs        lost lot loud loud- loung love lovely!" lovely?" lovingly. "lower luck! lunch? lurch
+  moral.txt    1   1    5     1     2    3        1        2         1      1     1      1     1
+           Terms
+Docs        madam, made madra magazine, majesty. make make," malusar man "man man, man?" man.
+  moral.txt      1    2     1         1        1    3      1       1   6    1    1     1    1
+           Terms
+Docs        manag mangal mango mani mark marri massag matter? may me, me!" me? me?" me. me."
+  moral.txt     1      1     1    1    1     1      1       1   2   8    1   1    1  10    1
+           Terms
+Docs        meanwhil medic medicin medicine," melt memori men merci merry-go-round." messag
+  moral.txt        1     1       3          1    1      1   5     1                1      1
+           Terms
+Docs        messeng met. "mi middl might milk milk, mine minut mischief model moment moment.
+  moral.txt       1    1   1     1     2    1     1    1     1        1     1      2       1
+           Terms
+Docs        money-pl mood. more more, more. morn morning, morning. most mother mouth. move "move
+  moral.txt        1     1    2     1     2    2        2        1    4      1      1    3     1
+           Terms
+Docs        mr. much mughal music must mutter muttered. myself myself, myself. name?" nate near
+  moral.txt   2    1      1     1    4      1         1      1       1       1      1    1    2
+           Terms
+Docs        neck. ned need nervous. never new news next "no, no, nod noise?" noise. noisili
+  moral.txt     1   1    1        1     2   1    2    5    1   1   2       1      1       2
+           Terms
+Docs        normal not "not notic now now. now." nurs nurses. obey obeyed. obviously, occasional,
+  moral.txt      1  13    2     3   4    1     1    1       1    2       1          1           1
+           Terms
+Docs        ocean ocean. off off. off', offic officer. officers. "oh "oh, oh, okay? old on, on.
+  moral.txt     1      1   5    3     1     1        1         1   3    2   1     1   1   1   1
+           Terms
+Docs        onc once. once." one onli onto ope- open oper opposit order ornament other our out
+  moral.txt   5     1      1   6    4    2    1    3    2       1     2        1     2   1  10
+           Terms
+Docs        out- out?" out. outsid over overboard," overboard! overboard." overwhelm pack pair
+  moral.txt    1     1    2      1    5           1          1           1         1    1    1
+           Terms
+Docs        panic panic. papa "papa "papa! papa, papa! papa. parent passeng pat patience. patient
+  moral.txt     1      1   19     3      1     4     1     1      1       4   2         1       3
+           Terms
+Docs        patient, patient?" patient. pect ped pelt pen pensiv peopl perform person person,
+  moral.txt        1         1        3    1   2    1   1      1     2       1      2       1
+           Terms
+Docs        piano pick pieces. place plan play played. plead pleas "pleas plenti pli pluck plump
+  moral.txt     1    2       1     2    1    5       2     1     2      2      2   2     1     1
+           Terms
+Docs        point pool, possessed, postpon "pot pot. power pray- prepar present press prob-
+  moral.txt     1     1          1       1    1    1     1     1      1       1     2     1
+           Terms
+Docs        problem. protested. proud pull pull- pump push put quick quick!" quickened, quiet
+  moral.txt        1          1     2    3     2    2    4   6     2       1          1     1
+           Terms
+Docs        quit race rage raigarh rail rail- railings. rais rajula. rajula." ran rap rather
+  moral.txt    2    4    1       2    2     1         5    2       1        1   8   1      2
+           Terms
+Docs        ration re- reach read read. readi realli receiv recognis recollect red refreshing.
+  moral.txt      1   2     5    1     1     3      1      2        1         1   1           1
+           Terms
+Docs        regain relief. rememb repeat repli replied, replied. reply, request rescu resist
+  moral.txt      1       1      3      1     1        2        3      3       1     7      1
+           Terms
+Docs        respir restor retch rider rider. right right?" rock rode roll roll- rolling, room
+  moral.txt      1      1     2     1      1     1       1    3    1    2     1        1    7
+           Terms
+Docs        room, room. rooms, root rope rope. ror. rough round round. ruffl run "run rush said
+  moral.txt     4     5      1    1    3     1    1     3     8      1     1   7    1    4   12
+           Terms
+Docs        said, said. sailor same sari sat save saw say say, saying, scared, school, scold
+  moral.txt     7     2      4    1    1   2    3   6   1    1       2       1       1     3
+           Terms
+Docs        scurri sea sea- sea. seat second secure, see "see seem select send sens serious
+  moral.txt      1   5    2    2    1      2       1  14    2    1      1    2    1       2
+           Terms
+Docs        serious. servant servant. set sever severely. shall she ship ship, ship!" ship.
+  moral.txt        1       3        2   1     1         1     1   6    8     1      1     7
+           Terms
+Docs        shivaji shock shock." shook should shoulder shoulder. shout shouted shouted, shouted.
+  moral.txt       3     1       1     1      2        1         1     2       1        1        1
+           Terms
+Docs        shouting, show shred- sick. side sign singapore, singapore," singapore." singh singh.
+  moral.txt         1    2      1     1    2    1          1           1           1     1      1
+           Terms
+Docs        sir," sir!" sir? "sire," sit sivnha sleeve. slippers, slippery, slowli small smile
+  moral.txt     2     1    1       1   4      1       1         1         1      1     1     4
+           Terms
+Docs        smiled. sneak snug so. soft softly? soldier some somebodi someon someth son soon
+  moral.txt       1     1    1   2    2       1       2    3        2      3      1   2    4
+           Terms
+Docs        sorri sorry, sound speak speaker spectacl spent splutter spoken spot. spread s.s.
+  moral.txt     1      1     3     1       1        2     1        1      1     1      2    2
+           Terms
+Docs        stamp stand stand- stare start stay steamer? step stern still stomach stood stop
+  moral.txt     1     3      2     1     3    2        1    2     1     4       1     4    3
+           Terms
+Docs        "stop stop- storm storm?" story-book. straight stream street. streets. stretcher
+  moral.txt     1     1     5       1           1        1      1       1        1         2
+           Terms
+Docs        strokes, strong stunned. sud- surpris suryaji "suryaji," suryaji. suryaji". swam
+  moral.txt        1      2        1    1       2       2          1        1         1    2
+           Terms
+Docs        swept swift swim swimmer switch switch. sword swung syringes. tabl table, table.
+  moral.txt     2     1    1       1      4       1     1     1         1    2      1      2
+           Terms
+Docs        tables, tain take talk taller tanaji tanaji? tap- teacher, team tear tears. teeth
+  moral.txt       1    1    3    4      1     11       1    1        1    2    2      5     1
+           Terms
+Docs        tell tempta- tenderly. tense. than thank "thank that that, the their them them, them.
+  moral.txt    3       1         1      1    1     1      1   10     1 214     2    4     2     1
+           Terms
+Docs        then then, there "there "there," there!" there?" these they "they'v they'v think this
+  moral.txt   13     1     6      2        1       1       1     1    7       2      1     2    5
+           Terms
+Docs        this." those though thought thought, three threw thrill throng through through. throw
+  moral.txt      1     2      1       1        1     1     2      2      1       1        1     1
+           Terms
+Docs        thud thump tickl tie tight tilak tile till time time. tion tiow tle to- today,"
+  moral.txt    1     1     1   1     1     1    1    2    2     2    1    1   1   1       1
+           Terms
+Docs        today. told tom, too too, too? took toth touch toward town trail trance. travel tray
+  moral.txt      1    1    1   1    3    1    3    1     5      6    1     1       1      2    1
+           Terms
+Docs        tri tuck tug tumbl ture turn two umratha umratha. unabl unanim uncle "uncle, uncle,
+  moral.txt   1    1   1     1    1    5   4       1        1     2      1     6       1      2
+           Terms
+Docs        uncle. under understand unpleasant, unsh unthought until unusu up, up," up. upper
+  moral.txt      1     1          1           1    1         1     1     1   1    1   3     1
+           Terms
+Docs        upset. us. usual varieti "vasantha," vasantha, vehemently, velvet verandah verandah,
+  moral.txt      1   2     1       1           1         1           1      1        1         1
+           Terms
+Docs        verandah. verdict. veri vermillion victim violent voic voice, waist. wait wait,"
+  moral.txt         3        1    7          1      1       1    2      3      1    2      1
+           Terms
+Docs        "wake walk wall. walls." wander want warm." warning. was wasn't watch water wave way
+  moral.txt     1    2     1       1      1    4      1        1  64      1     1     2    3   1
+           Terms
+Docs        way. "we weather! wedding. "welcome, well went were wet what "what when "when "where
+  moral.txt    1   2        1        1         1    1    7   13   1    9     7    9     1      1
+           Terms
+Docs        "where?" whi "whi which while while. while." white who "who wide-eyed. wife wife,
+  moral.txt        1   3    1     4     5      1       1     1   6    2          1    4     1
+           Terms
+Docs        wife. wild wild. will winced. wind wind. window wipe with "with without wo- woke
+  moral.txt     1    1     1    9       1    1     1      1    2   26     1       1   1    1
+           Terms
+Docs        won't wony. word wore work," worry, would "wouldn't wrath. writing. written: "yes,
+  moral.txt     1     1    1    1      1      1     3         1      1        1        1     2
+           Terms
+Docs        yet, yet," you "you you? you." you'll youngest your "you'r you'r
+  moral.txt    1     1  21    1    1     3      2        1    6      2     1
+> freq <- colSums(as.matrix(dtms))
+> freq
+          10"you            11111           11when             12it            13the 
+               1                1                1                1                1 
+      15concentr        16destroy             17to         18tanaji         19tanaji 
+               1                1                1                1                1 
+           3sick            4this             5man              6he              7of 
+               1                1                1                1                1 
+           about           about,             abov              ac-       accident." 
+               2                1                1                1                1 
+          across          adults,           adven-       adventure.           affect 
+               1                1                1                1                1 
+       affection       affection.    affectionate.            after     afterwards." 
+               2                1                1                1                1 
+           again           again,           again.          against             "ah, 
+               5                2                2                4                1 
+             air           alert.              all             all.            all." 
+               1                1               11                1                1 
+         alone?"            along           aloud,          alreadi             also 
+               1                1                2                1                1 
+          anchor          anchor.              and             "and            anger 
+               1                1               93                1                1 
+          anger,           anger.            angri              ani       annoyance, 
+               1                1                2                2                1 
+           anoth          another           answer         anxiety,          anxious 
+               2                3                1                1                1 
+           appli              are             "are             are!           aren't 
+               1                4                1                1                1 
+             arm             arm.             armi            arms.           around 
+               1                1                1                1                2 
+         around.            arti-         arti'***           arti\\           articl 
+               2                1                1                1                1 
+            asid              ask           asked,           asked.          assembl 
+               1               10                3                6                1 
+          attent       attention.          attract             away            away, 
+               2                1                2                5                1 
+           "aye,             aye,           "baby,           "baby!            baby! 
+               2                1                3                1                1 
+            back              bad          balconi         balcony,         balcony. 
+               7                1                2                1                1 
+            bat-          battle.              be-           beauti          .becaus 
+               1                1                1                2                1 
+        because.             been            beeta           beeta,          beeta," 
+               1                1                2                1                1 
+           befor         before,"              beg           behind           belong 
+               4                1                1                1                1 
+           besid             best           better          between           bhaiya 
+               2                1                1                1                3 
+         bhaiya,          bhaiya.              bid              big        binocular 
+               4                1                1                5                1 
+     binoculars.        "b.i.s.n.              bit            black         blowing. 
+               1                1                1                2                1 
+            blue            blurt            board             boat           boat." 
+               2                1                3                4                1 
+            book            book,           borrow             both           bother 
+               2                1                1                2                1 
+            bout              bow              box             box.            brave 
+               1                1                3                1                1 
+          break,       breakfast.           breath          breath.             brew 
+               1                2                1                2                1 
+           bride            bring       bringing?"            broke          brother 
+               1                2                1                2                1 
+        brother.          brought            brown            buckl             bulb 
+               2                2                1                1                1 
+            bunt            burst             busi            busy,              but 
+               1                2                4                1               10 
+            "but            cabin          cabin."          cabins.             call 
+               1                1                1                1                7 
+           calm.             came              can             "can             cap- 
+               1               11                4                1                1 
+           capt.          captain        captain,"         captain.             care 
+               1               13                1                2                1 
+          care."         careful,       carefully.            cat!"         "catch". 
+               1                1                1                1                1 
+          caught          certain            chair           chair,           chair. 
+               4                1                4                1                1 
+         chairs,          channel            cheek          cheeks.            child 
+               1                1                1                2                1 
+          child,           child.        childhood           chubbi             clap 
+               1                1                1                1                1 
+           class           clear.         clearly.            climb           clinic 
+               2                1                1                1                1 
+         clinic,            close           closer            cloth         clothes. 
+               1                6                1                1                1 
+             co.         coconut.           cold,"           colour             come 
+               1                1                1                1                4 
+           "come            come,      commentary.           commot          compani 
+               1                1                1                1                1 
+       companion          complet      compliments         compound        conscious 
+               1                1                1                1                1 
+      conscious.           consol          continu       convinced.             cosi 
+               1                1                1                1                1 
+           could         couldn't            coupl          course,          course. 
+               8                3                2                1                1 
+           crash             crew              cri           cried.            cross 
+               1                2                1                1                3 
+           crowd          current          curtain         curtain,             danc 
+               3                1                1                1                1 
+         daring.             darl             dash        daughter,        daughter. 
+               1                2                1                1                1 
+             day             day,             day.           days."             dear 
+               1                1                4                1                1 
+          dear,"            dear.             deck            deck.            decor 
+               1                1                2                2                1 
+             ded             deep              den           detail           deter- 
+               1                1                1                1                1 
+             did           didn't             dine       disappear.        distance. 
+               6                1                2                1                1 
+         disturb         disturb-           doctor         "doctor!          doctor? 
+               1                1                2                1                2 
+         doctor.             "doe             dog,           doing,             doll 
+               1                1                1                1                1 
+           doll,      domination.           "don't         "don't,"            don't 
+               1                1                3                1                3 
+           door,            door.             down           down,"            down. 
+               3                1               10                1                3 
+            doze             drag             drew          driver.             drop 
+               1                2                1                1                2 
+          drowsi             dull             dure             duti            eager 
+               1                1                1                1                1 
+        eagerly.              ear            earli             easi              edg 
+               1                3                1                1                1 
+             eh?            elder           elder-              end          english 
+               1                2                1                2                2 
+         engross            enjoy            enter         entered.         errands. 
+               1                1                1                1                1 
+            even             ever            everi       everybody.          everyon 
+               5                1                1                1                4 
+      everyone,"          everyth      everywhere.              ex-     exasperated, 
+               1                3                1                1                1 
+      excitedly,       exclaimed.           experi      experience.           explor 
+               1                1                1                1                1 
+             eye            eyes,           eyes."             face             fall 
+               4                2                1                5                1 
+          famili       fantastic!              far        farewell.           fasci- 
+               1                1                1                2                1 
+          fascin             fast           father         favourit             feel 
+               1                1                3                1                1 
+            feet            feet.             fell             felt           festiv 
+               1                1                1                3                1 
+         fever,"           ficial             find          finger.            first 
+               1                1                1                1                1 
+             fit              fix          flutter           follow             food 
+               1                1                1                1                1 
+        footstep              for        forbidden           force.             fore 
+               2               17                1                1                1 
+           fore-        forehead.            fort.          forward         forward. 
+               1                1                1                1                1 
+          fought            found             four             free           friend 
+               1                2                1                1                1 
+         "friend          friend.         friends,         friends.              fro 
+               1                1                1                1                1 
+            fro,             fro.             from            front             full 
+               1                1               10                2                4 
+            fume              fun             furi          furnish           gallop 
+               1                1                1                1                1 
+            game           games,           games.             gape             gaze 
+               1                1                1                1                1 
+       gentleman           gestur              get       gibraltar.            girl, 
+               2                1                4                1                1 
+            give            given             glow              "go              go. 
+               4                2                1                1                1 
+            god!            god!"              goe             gone             good 
+               1                1                2                1                1 
+           "good              got         grandpar            grin-             grip 
+               1                3                1                1                1 
+          groom.             gulp              had            hair.             hall 
+               1                1               13                1                1 
+           hall,             hand            hand.           hands,      happening?" 
+               1                6                3                1                1 
+      happening.            happi         happiest          happili           happy. 
+               1                1                1                1                1 
+        harbour,              has           hasn't             have             he?" 
+               1                4                1               18                1 
+            head            head.             hear            heard           heard, 
+               3                1                1                4                1 
+          heard.             heav            heavi             held            he'll 
+               1                2                1                2                1 
+          helm,"           "help!            help!            help?              her 
+               1                1                1                1                4 
+            her,             her.             here            here,           here?" 
+               1                1                1                3                1 
+             him             him,             him!            him!"             him. 
+              16                3                1                1               15 
+           him."          himself         himself.             hind              his 
+               4                1                1                1               41 
+            "his             hold          holiday         holiday,         holiday. 
+               1                3                1                1                1 
+            home             hope             hor-             hors        horsemen, 
+               1                1                1                1                1 
+          hospit              hot             hous           house,           house. 
+               2                1                1                1                3 
+             how             "how              hug             huge             hung 
+               4                1                1                2                1 
+           hurri             hurt            hurt,            ignor            "i'll 
+               1                1                1                1                2 
+            i'll             ill.              i'm           imagin           immedi 
+               3                2                5                2                4 
+   immediately,"              "in              in,           inclin    incoherently, 
+               1                1                1                1                1 
+        indeed,"           indian           indoor              ing           ings!" 
+               1                1                1                3                1 
+         inscrib         inside."          inspect       instantly.         instruct 
+               1                1                1                1                1 
+            into             is!"            isn't              "it              it, 
+              11                1                2                1                3 
+            it?"              it.             i've        jewel-cas            jiffi 
+               2                4                1                1                1 
+            joy.             jump             just           "ka/e*             keep 
+               1                2                5                1                2 
+           "keep             kept         kerchief             kiss      klick-klack 
+               1                2                1                1                1 
+            knew            knock             know           know,"           know." 
+               2                1                1                1                1 
+           known           kolas*             ladi            lady,             lamp 
+               1                1                1                1                1 
+            land            land.             larg             lash             last 
+               1                1                1                1                1 
+           later           later,            laugh        laughing.         laughs," 
+               1                1                1                1                1 
+       laughter.             lead           leader          leader.             leaf 
+               1                1                1                1                1 
+            lean             leap            leapt             leav             left 
+               3                1                1                2                1 
+           legs.             lem.              let         library.        life-boat 
+               1                1                1                1                2 
+     life-boats.             lift            light             like        lindsay." 
+               1                1                5                4                1 
+            lion            lion.           listen            liter            littl 
+               1                1                2                1                1 
+            live             look           "look,          "look!"            look- 
+               1                8                2                1                1 
+           look,            look.             lost              lot             loud 
+               1                1                1                1                5 
+           loud-            loung             love         lovely!"         lovely?" 
+               1                2                3                1                2 
+       lovingly.           "lower            luck!           lunch?            lurch 
+               1                1                1                1                1 
+          madam,             made            madra        magazine,         majesty. 
+               1                2                1                1                1 
+            make           make,"          malusar              man             "man 
+               3                1                1                6                1 
+            man,            man?"             man.            manag           mangal 
+               1                1                1                1                1 
+           mango             mani             mark            marri           massag 
+               1                1                1                1                1 
+         matter?              may              me,             me!"              me? 
+               1                2                8                1                1 
+            me?"              me.             me."         meanwhil            medic 
+               1               10                1                1                1 
+         medicin       medicine,"             melt           memori              men 
+               3                1                1                1                5 
+           merci merry-go-round."           messag          messeng             met. 
+               1                1                1                1                1 
+             "mi            middl            might             milk            milk, 
+               1                1                2                1                1 
+            mine            minut         mischief            model           moment 
+               1                1                1                1                2 
+         moment.         money-pl            mood.             more            more, 
+               1                1                1                2                1 
+           more.             morn         morning,         morning.             most 
+               2                2                2                1                4 
+          mother           mouth.             move            "move              mr. 
+               1                1                3                1                2 
+            much           mughal            music             must           mutter 
+               1                1                1                4                1 
+       muttered.           myself          myself,          myself.           name?" 
+               1                1                1                1                1 
+            nate             near            neck.              ned             need 
+               1                2                1                1                1 
+        nervous.            never              new             news             next 
+               1                2                1                2                5 
+            "no,              no,              nod          noise?"           noise. 
+               1                1                2                1                1 
+         noisili           normal              not             "not            notic 
+               2                1               13                2                3 
+             now             now.            now."             nurs          nurses. 
+               4                1                1                1                1 
+            obey          obeyed.       obviously,      occasional,            ocean 
+               2                1                1                1                1 
+          ocean.              off             off.            off',            offic 
+               1                5                3                1                1 
+        officer.        officers.              "oh             "oh,              oh, 
+               1                1                3                2                1 
+           okay?              old              on,              on.              onc 
+               1                1                1                1                5 
+           once.           once."              one             onli             onto 
+               1                1                6                4                2 
+            ope-             open             oper          opposit            order 
+               1                3                2                1                2 
+        ornament            other              our              out             out- 
+               1                2                1               10                1 
+           out?"             out.           outsid             over      overboard," 
+               1                2                1                5                1 
+      overboard!      overboard."        overwhelm             pack             pair 
+               1                1                1                1                1 
+           panic           panic.             papa            "papa           "papa! 
+               1                1               19                3                1 
+           papa,            papa!            papa.           parent          passeng 
+               4                1                1                1                4 
+             pat        patience.          patient         patient,        patient?" 
+               2                1                3                1                1 
+        patient.             pect              ped             pelt              pen 
+               3                1                2                1                1 
+          pensiv            peopl          perform           person          person, 
+               1                2                1                2                1 
+           piano             pick          pieces.            place             plan 
+               1                2                1                2                1 
+            play          played.            plead            pleas           "pleas 
+               5                2                1                2                2 
+          plenti              pli            pluck            plump            point 
+               2                2                1                1                1 
+           pool,       possessed,          postpon             "pot             pot. 
+               1                1                1                1                1 
+           power            pray-           prepar          present            press 
+               1                1                1                1                2 
+           prob-         problem.       protested.            proud             pull 
+               1                1                1                2                3 
+           pull-             pump             push              put            quick 
+               2                2                4                6                2 
+         quick!"       quickened,            quiet             quit             race 
+               1                1                1                2                4 
+            rage          raigarh             rail            rail-        railings. 
+               1                2                2                1                5 
+            rais          rajula.         rajula."              ran              rap 
+               2                1                1                8                1 
+          rather           ration              re-            reach             read 
+               2                1                2                5                1 
+           read.            readi           realli           receiv         recognis 
+               1                3                1                2                1 
+       recollect              red      refreshing.           regain          relief. 
+               1                1                1                1                1 
+          rememb           repeat            repli         replied,         replied. 
+               3                1                1                2                3 
+          reply,          request            rescu           resist           respir 
+               3                1                7                1                1 
+          restor            retch            rider           rider.            right 
+               1                2                1                1                1 
+         right?"             rock             rode             roll            roll- 
+               1                3                1                2                1 
+        rolling,             room            room,            room.           rooms, 
+               1                7                4                5                1 
+            root             rope            rope.             ror.            rough 
+               1                3                1                1                3 
+           round           round.            ruffl              run             "run 
+               8                1                1                7                1 
+            rush             said            said,            said.           sailor 
+               4               12                7                2                4 
+            same             sari              sat             save              saw 
+               1                1                2                3                6 
+             say             say,          saying,          scared,          school, 
+               1                1                2                1                1 
+           scold           scurri              sea             sea-             sea. 
+               3                1                5                2                2 
+            seat           second          secure,              see             "see 
+               1                2                1               14                2 
+            seem           select             send             sens          serious 
+               1                1                2                1                2 
+        serious.          servant         servant.              set            sever 
+               1                3                2                1                1 
+       severely.            shall              she             ship            ship, 
+               1                1                6                8                1 
+          ship!"            ship.          shivaji            shock          shock." 
+               1                7                3                1                1 
+           shook           should         shoulder        shoulder.            shout 
+               1                2                1                1                2 
+         shouted         shouted,         shouted.        shouting,             show 
+               1                1                1                1                2 
+          shred-            sick.             side             sign       singapore, 
+               1                1                2                1                1 
+     singapore,"      singapore."            singh           singh.            sir," 
+               1                1                1                1                2 
+           sir!"             sir?          "sire,"              sit           sivnha 
+               1                1                1                4                1 
+         sleeve.        slippers,        slippery,           slowli            small 
+               1                1                1                1                1 
+           smile          smiled.            sneak             snug              so. 
+               4                1                1                1                2 
+            soft          softly?          soldier             some         somebodi 
+               2                1                2                3                2 
+          someon           someth              son             soon            sorri 
+               3                1                2                4                1 
+          sorry,            sound            speak          speaker         spectacl 
+               1                3                1                1                2 
+           spent         splutter           spoken            spot.           spread 
+               1                1                1                1                2 
+            s.s.            stamp            stand           stand-            stare 
+               2                1                3                2                1 
+           start             stay         steamer?             step            stern 
+               3                2                1                2                1 
+           still          stomach            stood             stop            "stop 
+               4                1                4                3                1 
+           stop-            storm          storm?"      story-book.         straight 
+               1                5                1                1                1 
+          stream          street.         streets.        stretcher         strokes, 
+               1                1                1                2                1 
+          strong         stunned.             sud-          surpris          suryaji 
+               2                1                1                2                2 
+      "suryaji,"         suryaji.        suryaji".             swam            swept 
+               1                1                1                2                2 
+           swift             swim          swimmer           switch          switch. 
+               1                1                1                4                1 
+           sword            swung        syringes.             tabl           table, 
+               1                1                1                2                1 
+          table.          tables,             tain             take             talk 
+               2                1                1                3                4 
+          taller           tanaji          tanaji?             tap-         teacher, 
+               1               11                1                1                1 
+            team             tear           tears.            teeth             tell 
+               2                2                5                1                3 
+         tempta-        tenderly.           tense.             than            thank 
+               1                1                1                1                1 
+          "thank             that            that,              the            their 
+               1               10                1              214                2 
+            them            them,            them.             then            then, 
+               4                2                1               13                1 
+           there           "there         "there,"          there!"          there?" 
+               6                2                1                1                1 
+           these             they          "they'v           they'v            think 
+               1                7                2                1                2 
+            this           this."            those           though          thought 
+               5                1                2                1                1 
+        thought,            three            threw           thrill           throng 
+               1                1                2                2                1 
+         through         through.            throw             thud            thump 
+               1                1                1                1                1 
+           tickl              tie            tight            tilak             tile 
+               1                1                1                1                1 
+            till             time            time.             tion             tiow 
+               2                2                2                1                1 
+             tle              to-          today,"           today.             told 
+               1                1                1                1                1 
+            tom,              too             too,             too?             took 
+               1                1                3                1                3 
+            toth            touch           toward             town            trail 
+               1                5                6                1                1 
+         trance.           travel             tray              tri             tuck 
+               1                2                1                1                1 
+             tug            tumbl             ture             turn              two 
+               1                1                1                5                4 
+         umratha         umratha.            unabl           unanim            uncle 
+               1                1                2                1                6 
+         "uncle,           uncle,           uncle.            under       understand 
+               1                2                1                1                1 
+     unpleasant,             unsh        unthought            until            unusu 
+               1                1                1                1                1 
+             up,             up,"              up.            upper           upset. 
+               1                1                3                1                1 
+             us.            usual          varieti      "vasantha,"        vasantha, 
+               2                1                1                1                1 
+     vehemently,           velvet         verandah        verandah,        verandah. 
+               1                1                1                1                3 
+        verdict.             veri       vermillion           victim          violent 
+               1                7                1                1                1 
+            voic           voice,           waist.             wait           wait," 
+               2                3                1                2                1 
+           "wake             walk            wall.          walls."           wander 
+               1                2                1                1                1 
+            want           warm."         warning.              was           wasn't 
+               4                1                1               64                1 
+           watch            water             wave              way             way. 
+               1                2                3                1                1 
+             "we         weather!         wedding.        "welcome,             well 
+               2                1                1                1                1 
+            went             were              wet             what            "what 
+               7               13                1                9                7 
+            when            "when           "where         "where?"              whi 
+               9                1                1                1                3 
+            "whi            which            while           while.          while." 
+               1                4                5                1                1 
+           white              who             "who       wide-eyed.             wife 
+               1                6                2                1                4 
+           wife,            wife.             wild            wild.             will 
+               1                1                1                1                9 
+         winced.             wind            wind.           window             wipe 
+               1                1                1                1                2 
+            with            "with          without              wo-             woke 
+              26                1                1                1                1 
+           won't            wony.             word             wore           work," 
+               1                1                1                1                1 
+          worry,            would        "wouldn't           wrath.         writing. 
+               1                3                1                1                1 
+        written:            "yes,             yet,            yet,"              you 
+               1                2                1                1               21 
+            "you             you?            you."           you'll         youngest 
+               1                1                3                2                1 
+            your           "you'r            you'r 
+               6                2                1 
+> table(freq)
+freq
+  1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  21  26  41  64  93 
+830 180  68  47  25  14  11   6   3   7   4   1   5   1   1   1   1   1   1   1   1   1   1   1 
+214 
+  1 
+> findFreqTerms(dtm, lowfreq=1000)
+character(0)
+> findFreqTerms(dtm, lowfreq=100)
+[1] "the"
+> findAssocs(dtm, "data", corlimit=0.6)
+$data
+numeric(0)
+
+> freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
+> head(freq, 14)
+    the     and     was     his    with     you    papa    have     for     him    him.     see 
+    214      93      64      41      26      21      19      18      17      16      15      14 
+captain     had 
+     13      13 
+> wf <- data.frame(word=names(freq), freq=freq)
+> head(wf)
+     word freq
+the   the  214
+and   and   93
+was   was   64
+his   his   41
+with with   26
+you   you   21
+> library(wordcloud)
+> set.seed(123)
+> wordcloud(names(freq), freq, min.freq=40)
+> set.seed(142)
+> wordcloud(names(freq), freq, max.words=100)
+> set.seed(142)
+> wordcloud(names(freq), freq, min.freq=100)
+> set.seed(142)
+> wordcloud(names(freq), freq, min.freq=100, colors=brewer.pal(6, "Dark2"))
+> set.seed(142)
+> wordcloud(names(freq), freq, min.freq=100, scale=c(5, .1), colors=brewer.pal(6, "Dark2"))
+> 
